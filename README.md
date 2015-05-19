@@ -8,13 +8,13 @@ This image is based on suitupalex/cabal-build.
 This docker image builds on top of Arch Linux's marcelhuberfoo/arch image for the
 purpose of building projects using [Cabal][cabal].  It provides several key features:
 
-* A non-root user (`build`) for executing the image build.  This is important
+* A non-root user (`user`) for executing the image build.  This is important
   for security purposes and to ensure that the package doesn't require root
   permissions to be built.
 * Access to the build location will be in the volume located at `/data`.  This
   directory will be the default working directory.
 * The [Cabal][cabal] bin directory is automatically included in `PATH` using the
-  `/home/build/.cabal/bin` directory.
+  `/home/user/.cabal/bin` directory.
 
 ## Usage
 This library is useful with simple `.cabal`s from the command line.
@@ -36,9 +36,8 @@ docker run -i -t --rm -v /tmp/my-data:/data marcelhuberfoo/cabal-build cabal upd
 ```
 
 ## Permissions
-This image uses a `build` user to run [Cabal][cabal]. This means that your file permissions
-must allow this user to write to certain folders inside your project directory. The `build`
-user has a `UID` of `11235` and a `GID` of `100` which is equal to the `users` group on most
+This image uses `user` to run [Cabal][cabal]. This means that your file permissions
+must allow this user to write to certain folders inside your project directory. This user has a `UID` of `1000` and a `GID` of `100` which is equal to the initial `user` and `users` group on most
 Linux systems. You have to ensure that such a `UID:GID` combination is allowed to write to
 your mapped volume. The easiest way is to add group write permissions for the mapped volume
 and change the group id of the volume to 100.
@@ -63,8 +62,6 @@ FROM marcelhuberfoo/cabal-build
 USER root
 
 RUN pacman --sync --noconfirm --noprogressbar --quiet somepackage
-
-USER build
 ```
 
 You can then build this docker image and run it against your `.cabal`
