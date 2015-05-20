@@ -15,14 +15,14 @@ ADD entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 RUN mkdir -p -m 0775 /data /caballogs && chown -R $UID:$GID /data /caballogs
-RUN gosu user bash -c 'mkdir -p -m 0775 $HOME/.cabal && ln -s /caballogs $HOME/.cabal/logs'
+RUN gosu $UNAME bash -c 'mkdir -p -m 0775 $HOME/.cabal && ln -s /caballogs $HOME/.cabal/logs'
 
 VOLUME ["/data", "/caballogs"]
 WORKDIR /data
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-RUN gosu user bash -c 'cabal update'
+RUN gosu $UNAME bash -c 'cabal update'
 
 CMD ["cabal", "install", "-j"]
 
