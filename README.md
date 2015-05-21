@@ -1,33 +1,32 @@
 # cabal-build
-This is a base image for building [Haskell's][haskell] [Cabal][cabal]. (And 
+
+This is a base image for building packages with [Haskell's][haskell] [Cabal][cabal]. (And 
 pretty much the rest of the [Haskell Platform][haskell-platform].)
 
-This image is based on suitupalex/cabal-build.
+This Dockerfile is based on [suitupalex/cabal-build][suitupalex].
 
 ## Purpose
-This docker image builds on top of Arch Linux's marcelhuberfoo/arch image for the
-purpose of building projects using [Cabal][cabal].  It provides several key features:
 
-* A non-root user (`user`) for executing the image build.  This is important
-  for security purposes and to ensure that the package doesn't require root
-  permissions to be built.
-* Access to the build location will be in the volume located at `/data`.  This
-  directory will be the default working directory.
-* The [Cabal][cabal] bin directory is automatically included in `PATH` using the
-  `/home/user/.cabal/bin` directory.
+This docker image builds on top of my minimal Arch Linux [marcelhuberfoo/arch][dockerarch] image for the
+purpose of building projects using [Cabal][cabal].  It provides several features of which some are already present in the base image:
+
+* A non-root user and group `docky` for executing programs inside the container.
+* A umask of 0002 for user `docky`.
+* Exported variables `UNAME`, `GNAME`, `UID` and `GID` to make use of the user settings from within scripts.
+* Timezone (`/etc/localtime`) is linked to `Europe/Zurich`, adjust if required in a derived image.
+* An external build source folder can be mapped to the volume `/data`. This volume will be the default working directory.
+* The [Cabal][cabal] bin directory (`/home/docky/.cabal/bin`) is automatically prepended to the `PATH` variable.
 
 ## Usage
+
 This library is useful with simple `.cabal`s from the command line.
 For example:
 
 ```bash
 docker run --interactive --tty --rm --volume /tmp/my-data:/data marcelhuberfoo/cabal-build
-
-# Using short-options:
-docker run -i -t --rm -v /tmp/my-data:/data marcelhuberfoo/cabal-build
 ```
 
-This will execute the default command (`cabal install -j`).
+This will execute the default command `cabal install -j`.
 
 Other commands can also be executed.  For example, to update dependencies:
 
@@ -36,19 +35,31 @@ docker run -i -t --rm -v /tmp/my-data:/data marcelhuberfoo/cabal-build cabal upd
 ```
 
 ## Permissions
-This image uses `user` to run [Cabal][cabal]. This means that your file permissions
-must allow this user to write to certain folders inside your project directory. This user has a `UID` of `1000` and a `GID` of `100` which is equal to the initial `user` and `users` group on most
-Linux systems. You have to ensure that such a `UID:GID` combination is allowed to write to
-your mapped volume. The easiest way is to add group write permissions for the mapped volume
-and change the group id of the volume to 100.
 
+This image provides a user and group `docky` to run `cabal` as user `docky`.
+
+If you map in the `/data` volume, permissions on the host folder must allow user or group `docky` to write to it. I recommend adding at least a group `docky` with GID of `654321` to your host system and change the group of the folder to `docky`. Don't forget to add yourself to the `docky` group.
+The user `docky` has a `UID` of `654321` and a `GID` of `654321` which should not interfere with existing ids on regular Linux systems.
+
+Add user and group docky, group might be sufficient:
 ```bash
-# To give permissions to the entire project directory, do:
+groupadd -g 654321 docky
+useradd --system --uid 654321 --gid docky --shell '/sbin/nologin' docky
+```
+
+Add yourself to the docky group:
+```bash
+gpasswd --add myself docky
+```
+
+Set group permissions to the entire project directory:
+```bash
 chmod -R g+w /tmp/my-data
-chgrp -R 100 /tmp/my-data
+chgrp -R docky /tmp/my-data
 ```
 
 ### Dockerfile build
+
 Alternatively, you can create your own `Dockerfile` that builds on top of this
 image.  This allows you to modify the environment by installing additional
 software needed, altering the commands to run, etc.
@@ -58,23 +69,12 @@ process alone could look like this:
 
 ```dockerfile
 FROM marcelhuberfoo/cabal-build
-
+MAINTAINER Marcel Huber <marcelhuberfoo@gmail.com>
 USER root
-
 RUN pacman --sync --noconfirm --noprogressbar --quiet somepackage
-```
-
-You can then build this docker image and run it against your `.cabal`
-volume like normal (this example assumes the `.cabal` and `Dockerfile` are
-in your current directory):
-
-```bash
-docker build --tag my-data .
-docker run -i -t --rm -v "$(pwd):/data" my-data
-docker run -i -t --rm -v "$(pwd):/data" my-data cabal update
 ```
 
 [haskell]: https://haskell.org
 [cabal]: https://haskell.org/haskellwiki/Cabal
 [haskell-platform]: https://haskell.org/platform
-[nubs]: https://registry.hub.docker.com/u/nubs/npm-build/
+[suitupalex]: https://registry.hub.docker.com/u/suitupalex/cabal-build/
