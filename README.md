@@ -1,4 +1,4 @@
-# cabal-build
+# cabal-build [![](https://badge.imagelayers.io/marcelhuberfoo/cabal-build.svg)](https://imagelayers.io/?images=marcelhuberfoo/cabal-build 'Get your own badge on imagelayers.io')
 
 This is a base image for building packages with [Haskell's][haskell] [Cabal][cabal]. (And 
 pretty much the rest of the [Haskell Platform][haskell-platform].)
