@@ -78,3 +78,4 @@ RUN pacman --sync --noconfirm --noprogressbar --quiet somepackage
 [cabal]: https://haskell.org/haskellwiki/Cabal
 [haskell-platform]: https://haskell.org/platform
 [suitupalex]: https://registry.hub.docker.com/u/suitupalex/cabal-build/
+[dockerarch]: https://registry.hub.docker.com/u/marcelhuberfoo/arch/
