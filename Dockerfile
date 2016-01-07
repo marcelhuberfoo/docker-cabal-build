@@ -12,7 +12,7 @@ RUN pacman -Syyu --noconfirm && \
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-RUN mkdir -p -m 0775 /data /caballogs && chown -R $UID:$GID /data /caballogs
+RUN mkdir -p -m 0775 /data /caballogs && chown -R $UNAME:$GNAME /data /caballogs
 USER $UNAME
 RUN bash -l -c 'mkdir -p -m 0775 $HOME/.cabal && ln -s /caballogs $HOME/.cabal/logs'
 
